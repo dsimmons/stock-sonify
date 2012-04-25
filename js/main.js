@@ -1,7 +1,9 @@
-function getYahooTimeSeriesData(symbol, years, fn) {
+function getYahooTimeSeriesData(symbol, days, fn) {
     var now = new Date();
     var before = new Date();
-    before.setFullYear(now.getFullYear() - years);
+    var years = Math.floor(days/365);
+    //var months = Math.floor((days%365)/30);
+    before.setFullYear(now.getFullYear() - (Math.floor(days/365)));
 
     var url = "http://ichart.finance.yahoo.com/table.csv?s=" + symbol + "&a=" +
     (before.getMonth()+1) + "&b=" + before.getDate() + "&c="+before.getFullYear() +

@@ -15,6 +15,11 @@ $(function() {
         if (e.keyCode == 32) $('#play').trigger('click');
     });
 
+    //TODO: fix resolution toggle
+    $('#resolution > button').click( function(e) {
+        console.log(e);
+    });
+
     // Reset buttons if changing ticker symbol.
     $('#ticker').focus( function() {
         $('#download').button('reset');
@@ -36,7 +41,7 @@ $(function() {
 
         //TODO: allow the changing of resolution
         $('#download').button('loading');
-        getYahooTimeSeriesData(ticker, 1, function(data) {
+        getYahooTimeSeriesData(ticker, 365, function(data) {
             if (data) {
                 $('#download').button('reset');
                 $('#play').removeClass('disabled').addClass('btn-success');
@@ -64,7 +69,10 @@ $(function() {
                 .attr("y", function(d) { return h - y(d.close) + 15; })
                 .attr("height", function(d) { return y(d.close); })
                 .attr("width", barWidth)
-                .attr("fill", "#ccc");
+                //.attr("fill", "#ccc");
+                .attr('fill', function(d) {
+                    return d.dailyReturn > 0.0 ? 'green' : 'red';
+                });
             }
         });
     })
@@ -74,6 +82,7 @@ $(function() {
         // If the play button is green and ready to be pressed...
         if ( ! ($('#play').hasClass('disabled')) ) {
 
+            // Ready to go, change color and icon of button after press.
             if ($('#play').hasClass('btn-success')) {
 
                 playReturnSeriesSonification(0.1);
@@ -82,6 +91,18 @@ $(function() {
                     .addClass('btn-warning');
                 $('#play > i').attr('class', 'icon-pause');
 
+                var arr = [];
+                $('#plot').children().each( function() {
+                    arr.push(this);
+                });
+                for (var i = 0; i < arr.length; i++) {
+                    setTimeout(function(element) {
+                        console.log(element);
+                        $(element).attr('fill', '#ccc');
+                    }, 100*(i+1), arr[i]);
+                }
+
+            // Stop playback, change the button color and icon back.
             } else if ($('#play').hasClass('btn-warning')) {
                 audio.pause();
                 $('#play')
