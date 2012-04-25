@@ -1,74 +1,138 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Stock-sonify by dsimmons</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>stock-sonify</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="An experiment to try and subconsciously 'train' one's brain to learn the trends, movements, and behaviors of particular equities.">
+        <meta name="author" content="Dan Simmons, Jeffrey Portman, Karan Daftary">
 
-  </head>
-  <body>
+        <link href="./css/bootstrap.min.css" rel="stylesheet">
+        <link href="./css/styles.css" rel="stylesheet">
+    </head>
 
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/dsimmons/stock-sonify">Fork On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/dsimmons/stock-sonify/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/dsimmons/stock-sonify/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
+    <body>
+        <div class="container">
+            <div class="hero-unit">
 
-    <div class="wrapper">
+                <h1>stock-sonify</h1>
+                <br />
+                <p>An experiment to try and subconsciously 'train' one's brain to learn the trends, movements, and behaviors of particular equities.</p>
+                <br />
 
-      <section>
-        <div id="title">
-          <h1>Stock-sonify</h1>
-          <p>An experiment to try and subconsciously &quot;train&quot; one's brain to learn the trends, movements, and behaviors of particular equities.</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/dsimmons">dsimmons</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+                <div id="chart"></div>
+
+                <div class="control-group">
+                    <div class="controls">
+                        <div class="input-append">
+                            <input class="input-mini" id="ticker" size="16" type="text" placeholder="Ticker" autofocus="autofocus">
+                            <button class="btn" id="download" data-loading-text="Downloading..."><i class="icon-download"></i> Download Data</button>
+                            <button class="btn disabled" id="play"><i class="icon-play"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group" data-toggle="buttons-radio" align="center">
+                    <button class="btn">5d</button>
+                    <button class="btn">1m</button>
+                    <button class="btn">3m</button>
+                    <button class="btn">6m</button>
+                    <button class="btn">YTD</button>
+                    <button class="btn" id="default_resolution">1y</button>
+                    <button class="btn">5y</button>
+                    <button class="btn">10y</button>
+                </div>
+
+            </div>
+
+            <hr />
+            <footer>
+                <p>&copy; 2012 Dan Simmons, Jeffrey Portman, Karan Daftary</p>
+            </footer>
+
         </div>
 
-        <h3>Welcome to GitHub Pages.</h3>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+        <script src="./js/jquery.xdomainajax.js" type="text/javascript"></script>
+        <script src="./js/lib/d3.v2.min.js" type="text/javascript"></script>
+        <script src="./js/lib/bootstrap.min.js" type="text/javascript"></script>
+        <script src="./js/main.js" type="text/javascript"></script>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+        <script type="text/javascript">
+            var w = 800;
+            var h = 400;
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+            var chart = d3.select("#chart").append("svg:svg")
+            .attr('width', w)
+            .attr('height', h);
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+                $(function() {
 
-<h3>Designer Templates</h3>
+                        // Select 1Y resolution by default
+                        $(document).ready( function() {
+                            $('#default_resolution').button('toggle');
+                        });
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+                        // Map 'space' and/or 'p' to hitting "play"
+                        $(document).keypress( function(e) {
+                            if (e.keyCode == 112 || e.keyCode == 32) {
+                                $('#play').trigger('click');
+                            }
+                        });
 
-<h3>Rather Drive Stick?</h3>
+                        // Reset buttons if changing ticker symbol.
+                        $('#ticker').focus( function() {
+                            $('#download').button('reset');
+                            $('#play').addClass('disabled').removeClass('btn-success');
+                        });
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+                        // Allow enter key to simulate clicking "download data" button
+                        $('#ticker').keypress( function(e) {
+                            if (e.keyCode == 13) {
+                                $('#download').trigger('click');
+                                $('#play').trigger('focus');
+                            }
+                        });
 
-<h3>Authors and Contributors</h3>
+                        // Grab ticker data from Yahoo. Do nothing if no symbol is present.
+                        // Enable green "play" button on success.
+                        $('#download').click( function() {
+                            var ticker = $('#ticker').val();
+                            if (ticker.length === 0) return;
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+                            //TODO: allow the changing of resolution
+                            $('#download').button('loading');
+                            getYahooTimeSeriesData(ticker, 1, function(data) {
+                                if (data) {
+                                    $('#download').button('reset');
+                                    $('#play').removeClass('disabled').addClass('btn-success');
+                                    window.chart_data = data;
+                                }
+                            });
+                        })
 
-<h3>Support or Contact</h3>
+                        // Render chart by pressing play button.
+                        $('#play').click( function() {
+                            if ( ! ($('#play').hasClass('disabled')) ) {
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
+                                var x = d3.scale.linear().domain([0, window.chart_data.length]).range([0, w]);
+                                var y = d3.scale.linear().domain([0, d3.max(window.chart_data, function(d) {
+                                        return d.close;
+                                    })]).rangeRound([0, h]);
+                                var barWidth = w / window.chart_data.length;
 
-    </div>
-    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
-    
-  </body>
+
+                                chart.selectAll("rect")
+                                    .data(window.chart_data)
+                                    .enter().append("svg:rect")
+                                    .attr("x", function(d, i) { return x(i); })
+                                    .attr("y", function(d) { return h - y(d.close) + 15; })
+                                    .attr("height", function(d) { return y(d.close); })
+                                    .attr("width", barWidth)
+                                    .attr("fill", "#ccc");
+                            }
+                        });
+                });
+    </script>
+
+    </body>
 </html>
