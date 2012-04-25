@@ -1,5 +1,4 @@
 function getYahooTimeSeriesData(symbol, years, fn) {
-
     var now = new Date();
     var before = new Date();
     before.setFullYear(now.getFullYear() - years);
@@ -145,7 +144,7 @@ function playReturnSeriesSonification(timeOfOneBar) {
 
     wave.Make(sound);
 
-    var audio = new Audio(wave.dataURI);
+    audio = new Audio(wave.dataURI);
 
     $(audio).on('timeupdate', function(e) {
         var dataPointOn = Math.round(map(audio.currentTime, 0, audio.duration, 0, dataLength));
@@ -153,14 +152,6 @@ function playReturnSeriesSonification(timeOfOneBar) {
         audio.volume = map(timeSeriesData[dataPointOn].volume, lowestVolume, highestVolume, 0.1, 0.9);
     });
 
-    play(audio);
-}
-
-
-function play(audio) {
-    if (!audio.paused) { // if playing stop and rewind
-        audio.pause();
-    }
     audio.play();
 }
 

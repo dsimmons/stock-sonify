@@ -2,10 +2,12 @@ $(function() {
 
     var w = 800;
     var h = 400;
+    audio = null;
 
     // Select 1Y resolution by default
     $(document).ready( function() {
         $('#default_resolution').button('toggle');
+        $('#ticker').focus();
     });
 
     // Map 'space' to hitting "play"
@@ -16,7 +18,9 @@ $(function() {
     // Reset buttons if changing ticker symbol.
     $('#ticker').focus( function() {
         $('#download').button('reset');
-        $('#play').addClass('disabled').removeClass('btn-success');
+        $('#play').addClass('disabled').removeClass('btn-success btn-warning');
+        $('#play > i').attr('class', 'icon-play');
+        if (audio) audio.pause();
     });
 
     // Allow enter key to simulate clicking "download data" button
@@ -69,7 +73,22 @@ $(function() {
     $('#play').click( function() {
         // If the play button is green and ready to be pressed...
         if ( ! ($('#play').hasClass('disabled')) ) {
-            playReturnSeriesSonification(0.1);
+
+            if ($('#play').hasClass('btn-success')) {
+
+                playReturnSeriesSonification(0.1);
+                $('#play')
+                    .removeClass('btn-success')
+                    .addClass('btn-warning');
+                $('#play > i').attr('class', 'icon-pause');
+
+            } else if ($('#play').hasClass('btn-warning')) {
+                audio.pause();
+                $('#play')
+                    .removeClass('btn-warning')
+                    .addClass('btn-success');
+                $('#play > i').attr('class', 'icon-play');
+            }
         }
     });
 });
