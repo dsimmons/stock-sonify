@@ -15,17 +15,17 @@ function getYahooTimeSeriesData(symbol, years, fn) {
         rows = rows.map(function(element) {
             var s = element.split(",");
             return {
-                "date": s[0], 
+                "date": s[0],
                 "open": s[1],
-                "high": s[2], 
-                "low": s[3], 
-                "close": s[4], 
-                "volume": s[5], 
+                "high": s[2],
+                "low": s[3],
+                "close": s[4],
+                "volume": s[5],
                 "adjclose": s[6]
             };
         });
         calcDailyReturn(rows);
-        fn(rows);
+        fn(rows.reverse()); // Return to calling function in order of least-most recent (opposite of default)
     });
 }
 
@@ -36,8 +36,12 @@ function getBetween(source, start, finish, from) {
     return source.substr(startPosition, (endPosition-startPosition));
 }
 
+
+// OHLC data passed in in order of most-least recent
+// ((Today's close - Yesterday's close) / Yesterday's Close) x 100 to convert to percentage.
 function calcDailyReturn(timeSeries) {
-    for(var i = 1; i < timeSeries.length; i++) {
-        timeSeries[i].dailyReturn = (timeSeries[i].close / timeSeries[i-1].close) - 1;
+    for (var i = 0; i < timeSeries.length-1; i++) {
+        timeSeries[i].dailyReturn = (timeSeries[i].close - timeSeries[i+1].close) / timeSeries[i+1].close;
+        timeSeries[i].dailyReturn *= 100;
     }
 }
