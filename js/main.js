@@ -1,32 +1,33 @@
 function getYahooTimeSeriesData(symbol, years, fn) {
-	var now = new Date();
-	var before = new Date();
-	before.setFullYear(now.getFullYear() - years);
+    var now = new Date();
+    var before = new Date();
+    before.setFullYear(now.getFullYear() - years);
 
-	var url = "http://ichart.finance.yahoo.com/table.csv?s=" + symbol + "&a=" +
-		(before.getMonth()+1) + "&b=" + before.getDate() + "&c="+before.getFullYear() +
-		"&d=" + (now.getMonth()+1) + "&e=" + now.getDate() + "&f=" + now.getFullYear() + "&g=d&ignore=.csv";
+    var url = "http://ichart.finance.yahoo.com/table.csv?s=" + symbol + "&a=" +
+        (before.getMonth()+1) + "&b=" + before.getDate() + "&c="+before.getFullYear() +
+        "&d=" + (now.getMonth()+1) + "&e=" + now.getDate() + "&f=" + now.getFullYear() + "&g=d&ignore=.csv";
 
-	$.get(url, function(data) {
-		var rawData = getBetween(data.responseText, "<p>", "</p>", 0);
-		var rows = rawData.split(" ");
-		rows.shift(); // Remove header row
-		rows.shift(); // Remove the rest from Adj Close
-		rows = rows.map(function(element) {
-			var s = element.split(",");
-			return {
-				"date": s[0],
-				"open": parseFloat(s[1]),
-				"high": parseFloat(s[2]),
-				"low": parseFloat(s[3]),
-				"close": parseFloat(s[4]),
-				"volume": parseInt(s[5], 10),
-				"adjclose": parseFloat(s[6])
-			};
-		});
-		calcDailyReturn(rows);
-		fn(rows);
-	});
+    $.get(url, function(data) {
+        var rawData = getBetween(data.responseText, "<p>", "</p>", 0);
+        var rows = rawData.split(" ");
+        rows.shift(); // Remove header row
+        rows.shift(); // Remove the rest from Adj Close
+        rows = rows.map(function(element) {
+            var s = element.split(",");
+            return {
+                "date": s[0],
+                "open": parseFloat(s[1]),
+                "high": parseFloat(s[2]),
+                "low": parseFloat(s[3]),
+                "close": parseFloat(s[4]),
+                "volume": parseInt(s[5], 10),
+                "adjclose": parseFloat(s[6])
+            };
+        });
+        rows.reverse();
+        calcDailyReturn(rows);
+        fn(rows); // Return to calling function in order of least-most recent (opposite of default)
+    });
 }
 
 function getBetween(source, start, finish, from) {
@@ -36,6 +37,8 @@ function getBetween(source, start, finish, from) {
 	return source.substr(startPosition, (endPosition-startPosition));
 }
 
+
+// OHLC data passed in in order of most-least recent
 function calcDailyReturn(timeSeries) {
 	for(var i = 1; i < timeSeries.length; i++) {
 		timeSeries[i].dailyReturn = (timeSeries[i].close / timeSeries[i-1].close) - 1;
@@ -132,7 +135,7 @@ function playReturnSeriesSonification(timeOfOneBar) {
 
 		while(x < stoppingPoint) { //The sound for each data point should be this long... 44100 = 1 Second
 			if((currentReturn/stdDev) > 1.0) {
-				sound[x++] = 128+Math.round(127*Math.sin(x/8));
+				sound[x++] = 128+Math.round(127*Math.sin(x/8*currentReturn/stdDev));
 			} else {
 				sound[x++] = 128+Math.round(127*Math.sin(x/waveDivider));
 			}
