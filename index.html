@@ -58,14 +58,10 @@
         <script src="./js/main.js" type="text/javascript"></script>
 
         <script type="text/javascript">
-            var w = 800;
-            var h = 400;
-
-            var chart = d3.select("#chart").append("svg:svg")
-            .attr('width', w)
-            .attr('height', h);
-
                 $(function() {
+
+                        var w = 800;
+                        var h = 400;
 
                         // Select 1Y resolution by default
                         $(document).ready( function() {
@@ -105,7 +101,31 @@
                                 if (data) {
                                     $('#download').button('reset');
                                     $('#play').removeClass('disabled').addClass('btn-success');
-                                    window.chart_data = data;
+
+                                    $('#plot').remove();
+
+                                    var chart = d3.select('#chart').append('svg:svg')
+                                    .attr('width', w)
+                                    .attr('height', h)
+                                    .attr('id', 'plot');
+
+                                    var x = d3.scale.linear()
+                                        .domain([0, chart_data.length])
+                                        .range([0, w]);
+                                    var y = d3.scale.linear()
+                                        .domain([0, d3.max(chart_data, function(d) { return d.close; } ) ])
+                                        .rangeRound([0, h]);
+                                    var barWidth = w / data.length;
+
+
+                                    chart.selectAll("rect")
+                                        .data(data)
+                                        .enter().append("svg:rect")
+                                        .attr("x", function(d, i) { return x(i); })
+                                        .attr("y", function(d) { return h - y(d.close) + 15; })
+                                        .attr("height", function(d) { return y(d.close); })
+                                        .attr("width", barWidth)
+                                        .attr("fill", "#ccc");
                                 }
                             });
                         })
@@ -114,21 +134,6 @@
                         $('#play').click( function() {
                             if ( ! ($('#play').hasClass('disabled')) ) {
 
-                                var x = d3.scale.linear().domain([0, window.chart_data.length]).range([0, w]);
-                                var y = d3.scale.linear().domain([0, d3.max(window.chart_data, function(d) {
-                                        return d.close;
-                                    })]).rangeRound([0, h]);
-                                var barWidth = w / window.chart_data.length;
-
-
-                                chart.selectAll("rect")
-                                    .data(window.chart_data)
-                                    .enter().append("svg:rect")
-                                    .attr("x", function(d, i) { return x(i); })
-                                    .attr("y", function(d) { return h - y(d.close) + 15; })
-                                    .attr("height", function(d) { return y(d.close); })
-                                    .attr("width", barWidth)
-                                    .attr("fill", "#ccc");
                             }
                         });
                 });
