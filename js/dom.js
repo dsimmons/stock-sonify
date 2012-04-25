@@ -69,7 +69,7 @@ $(function() {
     $('#play').click( function() {
         // If the play button is green and ready to be pressed...
         if ( ! ($('#play').hasClass('disabled')) ) {
-
+            playReturnSeriesSonification(0.1);
         }
     });
 });
